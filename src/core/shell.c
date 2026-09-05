@@ -1,4 +1,6 @@
 #include "core/shell.h"
+#include "core/lexer.h"
+#include "data_structure/token.h"
 
 #define USR_INPUT_MAX 1024
 
@@ -73,6 +75,16 @@ static void shell_state_lexing(struct shell_ctx *ctx) {
         return;
     }
 
+    if(lex_tokenize(&ctx->input_buf, &ctx->tok_list) != 0) {
+        shell_state_transition(ctx, SHELL_STATE_ERROR);
+        return;
+    }
+
+    for(size_t i = 0; i < ctx->tok_list.size; ++i) {
+        token_t *tok = (token_t *)vec_at(&ctx->tok_list, i);
+        printf("Token %zu: Type: %d, Value: %s\n", i, tok->type, tok->val.data);
+    }
+
     shell_state_transition(ctx, SHELL_STATE_PARSING);
 }
 
@@ -108,7 +120,7 @@ static void shell_state_exit(struct shell_ctx *ctx) {
 void shell_context_init(struct shell_ctx *self) {
     self->current_state = SHELL_STATE_INIT;
     self->prev_state = SHELL_STATE_INIT;
-    self->tok_list = (vec_t){0};
+    vec_init(&self->tok_list, sizeof(token_t), (vec_free_cb_t)token_free);
     self->input_buf = (cstr_t){0};
     self->is_running = 1;
     self->exit_code = 0;

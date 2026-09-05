@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../types.h"
+#include "types.h"
 #include "data_structure/cstr.h"
 #include "data_structure/vec.h"
 
