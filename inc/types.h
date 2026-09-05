@@ -2,9 +2,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "data_structure/cstr.h"
-#include "data_structure/vec.h"
-#include "data_structure/ast.h"
 
 // ========== Basic Type Definitions ==========
 typedef int32_t i32;
