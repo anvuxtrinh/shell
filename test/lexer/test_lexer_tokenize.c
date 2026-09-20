@@ -3,6 +3,7 @@
 
 #include "../framework/framework.h"
 #include "../../inc/core/lexer.h"
+#include "../../inc/data_structure/type_ops.h"
 
 // = Test Fixtures
 static cstr_t g_input;
@@ -13,7 +14,7 @@ static void setup(void)
     g_input = (cstr_t){0};
     g_tok_list = (vec_t){0};
 
-    int ret = vec_init(&g_tok_list, sizeof(token_t), (vec_deinit_cb_t)token_deinit);
+    int ret = vec_init(&g_tok_list, sizeof(token_t), &token_ops);
     ASSERT_EQ(0, ret, "Expected vec_init to succeed for token list fixture");
 }
 

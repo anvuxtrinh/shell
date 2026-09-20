@@ -1,5 +1,6 @@
 #include "core/shell.h"
 #include "core/lexer.h"
+#include "core/parser.h"
 
 #include "data_structure/type_ops.h"
 #include "data_structure/token.h"
