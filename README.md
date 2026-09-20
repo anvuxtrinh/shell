@@ -10,11 +10,12 @@
 
 ```bash
 # cfg and build
-cmake -B build
+cmake -B build -DENABLE_TESTING=ON
 make -C build
 
 # run
 ./build/shell
 
 # run test
+cd ./build
 ctest --test-dir build --output-on-failure

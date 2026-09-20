@@ -13,17 +13,17 @@ static void setup(void)
     g_input = (cstr_t){0};
     g_tok_list = (vec_t){0};
 
-    int ret = vec_init(&g_tok_list, sizeof(token_t), (vec_free_cb_t)token_free);
+    int ret = vec_init(&g_tok_list, sizeof(token_t), (vec_deinit_cb_t)token_deinit);
     ASSERT_EQ(0, ret, "Expected vec_init to succeed for token list fixture");
 }
 
 static void teardown(void)
 {
-    int ret = vec_free(&g_tok_list);
-    ASSERT_EQ(0, ret, "Expected vec_free to succeed during fixture teardown");
+    int ret = vec_deinit(&g_tok_list);
+    ASSERT_EQ(0, ret, "Expected vec_deinit to succeed during fixture teardown");
 
-    ret = cstr_free(&g_input);
-    ASSERT_EQ(0, ret, "Expected cstr_free to succeed during fixture teardown");
+    ret = cstr_deinit(&g_input);
+    ASSERT_EQ(0, ret, "Expected cstr_deinit to succeed during fixture teardown");
 }
 
 static void set_input(const char *text)

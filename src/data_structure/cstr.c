@@ -77,26 +77,26 @@ int cstr_pop(cstr_t *self) {
     return 0;
 }
 
-int cstr_copy(cstr_t *self, const char *str, size_t n) {
-    if(self == NULL || str == NULL || 
+int cstr_copy(cstr_t *dest, const char *src, size_t n) {
+    if(dest == NULL || src == NULL || 
         n > SIZE_MAX - 1) return EINVAL;
 
     if(n == 0) {
-        self->len = 0;
-        if(self->data != NULL) {
-            self->data[0] = '\0';
+        dest->len = 0;
+        if(dest->data != NULL) {
+            dest->data[0] = '\0';
         }
         return 0;
     }
 
-    if(should_grow(self, n)) {
-        int ret = cstr_grow_capacity(self, n);
+    if(should_grow(dest, n)) {
+        int ret = cstr_grow_capacity(dest, n);
         if(ret != 0) { return ret; }
     }
 
-    memcpy(self->data, str, n);
-    self->len = n;
-    self->data[self->len] = '\0';
+    memcpy(dest->data, src, n);
+    dest->len = n;
+    dest->data[dest->len] = '\0';
     return 0;
 }
 
@@ -154,7 +154,7 @@ int cstr_clear(cstr_t *self) {
     return 0;
 }
 
-int cstr_free(cstr_t *self) {
+int cstr_deinit(cstr_t *self) {
     if(self == NULL) { return EINVAL; }
     if(self->data != NULL) {
         free(self->data);
@@ -184,4 +184,23 @@ int cstr_shrink_to_fit(cstr_t *self) {
     self->data = new_data;
     self->cap = new_cap;
     return 0;
+}
+
+cstr_t* cstr_clone(const cstr_t *src) {
+    if(src == NULL) { return NULL; }
+
+    cstr_t *new_cstr = (cstr_t *)malloc(sizeof(cstr_t));
+    if(new_cstr == NULL) { return NULL; }
+
+    new_cstr->data = (char *)malloc(src->cap);
+    if(new_cstr->data == NULL) {
+        free(new_cstr);
+        return NULL;
+    }
+
+    memcpy(new_cstr->data, src->data, src->len + 1);
+    new_cstr->len = src->len;
+    new_cstr->cap = src->cap;
+
+    return new_cstr;
 }

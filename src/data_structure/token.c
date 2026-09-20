@@ -1,7 +1,7 @@
 #include <errno.h>
 #include "data_structure/token.h"
 
-void token_free(token_t *self) {
+void token_deinit(token_t *self) {
     if(self == NULL) {
         return;
     }
@@ -34,4 +34,23 @@ void token_init(token_t *self) {
 
     self->type = 0;
     self->val = (cstr_t){0};
+}
+
+token_t* token_clone(const token_t *src) {
+    if(src == NULL) {
+        return NULL;
+    }
+
+    token_t *new_token = (token_t *)malloc(sizeof(token_t));
+    if(new_token == NULL) {
+        return NULL;
+    }
+
+    token_init(new_token);
+    if(token_copy(new_token, src) != 0) {
+        free(new_token);
+        return NULL;
+    }
+
+    return new_token;
 }

@@ -1,5 +1,7 @@
 #include "core/shell.h"
 #include "core/lexer.h"
+
+#include "data_structure/type_ops.h"
 #include "data_structure/token.h"
 
 #define USR_INPUT_MAX 1024
@@ -90,6 +92,14 @@ static void shell_state_lexing(struct shell_ctx *ctx) {
 
 static void shell_state_parsing(struct shell_ctx *ctx) {
     if(ctx == NULL) { return; }
+
+    if(parser_parse(&ctx->tok_list, &ctx->ast) != 0) {
+        shell_state_transition(ctx, SHELL_STATE_ERROR);
+        return;
+    }
+
+    print_ast(&ctx->ast, 0);
+
     shell_state_transition(ctx, SHELL_STATE_EXECUTING);
 }
 
@@ -103,6 +113,7 @@ static void shell_state_cleanup(struct shell_ctx *ctx) {
     
     vec_clear(&ctx->tok_list);
     cstr_clear(&ctx->input_buf);
+    ast_node_deinit(&ctx->ast);
 
     shell_state_transition(ctx, SHELL_STATE_INTERACTIVE);
 }
@@ -120,15 +131,17 @@ static void shell_state_exit(struct shell_ctx *ctx) {
 void shell_context_init(struct shell_ctx *self) {
     self->current_state = SHELL_STATE_INIT;
     self->prev_state = SHELL_STATE_INIT;
-    vec_init(&self->tok_list, sizeof(token_t), (vec_free_cb_t)token_free);
     self->input_buf = (cstr_t){0};
     self->is_running = 1;
     self->exit_code = 0;
+
+    vec_init(&self->tok_list, sizeof(token_t), &token_ops);
 }
 
-void shell_context_free(struct shell_ctx *self) {
-    vec_free(&self->tok_list);
-    cstr_free(&self->input_buf);
+void shell_context_deinit(struct shell_ctx *self) {
+    vec_deinit(&self->tok_list);
+    cstr_deinit(&self->input_buf);
+    ast_node_deinit(&self->ast);
 }
 
 i32 shell_run(struct shell_ctx *ctx) {

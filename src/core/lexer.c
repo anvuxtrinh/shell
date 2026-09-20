@@ -69,8 +69,8 @@ static inline void lex_ctx_init(lex_ctx_t *ctx, cstr_t *input, vec_t *tok_list) 
     ctx->exit_code = 0;
 }
 
-static inline void lex_ctx_free(lex_ctx_t *ctx) {
-    token_free(&ctx->tok);
+static inline void lex_ctx_deinit(lex_ctx_t *ctx) {
+    token_deinit(&ctx->tok);
 }
 
 static void lex_make_token(lex_ctx_t *ctx, tok_type_t type) {
@@ -82,10 +82,7 @@ static void lex_make_token(lex_ctx_t *ctx, tok_type_t type) {
         || type == TOK_REDIR_FD || type == TOK_PIPE || type == TOK_AMPERSAND
         || ctx->tok.val.len > 0) 
     {
-        token_t buf_tok;
-        token_init(&buf_tok);
-        token_copy(&buf_tok, &ctx->tok);
-        vec_push(ctx->tok_list, &buf_tok);
+        vec_push(ctx->tok_list, &ctx->tok);
         token_clear(&ctx->tok);
     }
 }
@@ -131,7 +128,7 @@ i32 lex_tokenize(cstr_t *input, vec_t *tok_list) {
     if(ctx.tok.val.len > 0) {
         lex_make_token(&ctx, TOK_STR);
     }
-    lex_ctx_free(&ctx);
+    lex_ctx_deinit(&ctx);
 
     return ctx.exit_code;
 }

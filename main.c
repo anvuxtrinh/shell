@@ -4,20 +4,20 @@
 #include "inc/core/shell.h"
 
 int main(int argc, char *argv[]) {
-  (void) argc;
-  (void) argv;
+    (void) argc;
+    (void) argv;
 
-  setbuf(stdout, NULL);
+    setbuf(stdout, NULL);
 
-  struct shell_ctx ctx;
-  shell_context_init(&ctx);
+    struct shell_ctx ctx;
+    shell_context_init(&ctx);
 
-  i32 ret = shell_run(&ctx);
-  if(ret != 0) {
-      fprintf(stderr, "Shell exited with error code: %d\n", ret);
-  }
+    i32 ret = shell_run(&ctx);
+    if(ret != 0) {
+        fprintf(stderr, "Shell exited with error code: %d\n", ret);
+    }
 
-  shell_context_free(&ctx);
+    shell_context_deinit(&ctx);
 
-  return ret;
+    return ret;
 }
