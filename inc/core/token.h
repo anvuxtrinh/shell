@@ -5,6 +5,7 @@
 
 typedef enum tok_type {
     TOK_STR,
+    TOK_DIGIT,
     TOK_REDIR_FD,
     TOK_REDIR_OUT,
     TOK_REDIR_OUT_APPEND,

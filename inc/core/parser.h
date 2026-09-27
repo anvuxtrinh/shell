@@ -2,7 +2,7 @@
 
 #include "types.h"
 #include "data_structure/vec.h"
-#include "data_structure/token.h" 
-#include "data_structure/ast.h"
+#include "core/token.h"
+#include "core/ast.h"
 
-i32 parser_parse(vec_t *tok_list, ast_node_t *ast);
+ast_node_t *parser_parse(vec_t *tok_list);

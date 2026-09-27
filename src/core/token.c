@@ -1,12 +1,13 @@
 #include <errno.h>
-#include "data_structure/token.h"
+#include "core/token.h"
 
 void token_deinit(token_t *self) {
     if(self == NULL) {
         return;
     }
 
-    cstr_clear(&self->val);
+    self->type = 0;
+    cstr_deinit(&self->val);
 }
 
 void token_clear(token_t *self) {
@@ -24,7 +25,10 @@ int token_copy(token_t *dest, const token_t *src) {
     }
 
     dest->type = src->type;
-    return cstr_copy(&dest->val, src->val.data, src->val.len);
+    if(dest->type == TOK_STR || dest->type == TOK_DIGIT) {
+        return cstr_copy(&dest->val, src->val.data, src->val.len);
+    }
+    return 0;
 }
 
 void token_init(token_t *self) {

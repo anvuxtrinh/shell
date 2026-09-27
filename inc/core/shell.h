@@ -3,7 +3,7 @@
 #include "types.h"
 #include "data_structure/cstr.h"
 #include "data_structure/vec.h"
-#include "data_structure/ast.h"
+#include "core/ast.h"
 
 enum shell_state {
     SHELL_STATE_INIT = 0,
@@ -24,7 +24,7 @@ struct shell_ctx{
     // Data
     vec_t tok_list;
     cstr_t input_buf;
-    ast_node_t ast;
+    ast_node_t *ast;
 
     //State
     b8 is_running;

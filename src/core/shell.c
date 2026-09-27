@@ -1,9 +1,9 @@
+
+#include "type_ops.h"
 #include "core/shell.h"
 #include "core/lexer.h"
 #include "core/parser.h"
-
-#include "data_structure/type_ops.h"
-#include "data_structure/token.h"
+#include "core/token.h"
 
 #define USR_INPUT_MAX 1024
 
@@ -94,12 +94,13 @@ static void shell_state_lexing(struct shell_ctx *ctx) {
 static void shell_state_parsing(struct shell_ctx *ctx) {
     if(ctx == NULL) { return; }
 
-    if(parser_parse(&ctx->tok_list, &ctx->ast) != 0) {
+    ctx->ast = parser_parse(&ctx->tok_list);
+    if(ctx->ast == NULL) {
         shell_state_transition(ctx, SHELL_STATE_ERROR);
         return;
     }
 
-    print_ast(&ctx->ast, 0);
+    print_ast(ctx->ast, 0);
 
     shell_state_transition(ctx, SHELL_STATE_EXECUTING);
 }
@@ -114,7 +115,7 @@ static void shell_state_cleanup(struct shell_ctx *ctx) {
     
     vec_clear(&ctx->tok_list);
     cstr_clear(&ctx->input_buf);
-    ast_node_deinit(&ctx->ast);
+    ast_node_destroy(ctx->ast);
 
     shell_state_transition(ctx, SHELL_STATE_INTERACTIVE);
 }
@@ -142,7 +143,7 @@ void shell_context_init(struct shell_ctx *self) {
 void shell_context_deinit(struct shell_ctx *self) {
     vec_deinit(&self->tok_list);
     cstr_deinit(&self->input_buf);
-    ast_node_deinit(&self->ast);
+    ast_node_destroy(self->ast);
 }
 
 i32 shell_run(struct shell_ctx *ctx) {

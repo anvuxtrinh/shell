@@ -48,6 +48,16 @@ static int cstr_shrink_capacity(cstr_t *self) {
     return 0;
 }
 
+int cstr_init(cstr_t *self) {
+    if(self == NULL) { return EINVAL; }
+
+    self->data = NULL;
+    self->len = 0;
+    self->cap = 0;
+
+    return 0;
+}
+
 int cstr_appendn(cstr_t *self, const char *str, size_t n) {
     if(self == NULL || str == NULL ||
         n == 0 || n > SIZE_MAX - self->len - 1) return EINVAL;
@@ -186,8 +196,13 @@ int cstr_shrink_to_fit(cstr_t *self) {
     return 0;
 }
 
+int cstr_to_num(const cstr_t *self) {
+    if(self == NULL || self->data == NULL) { return 0; }
+    return atoi(self->data);
+}
+
 cstr_t* cstr_clone(const cstr_t *src) {
-    if(src == NULL) { return NULL; }
+    if(src == NULL || src->data == NULL) { return NULL; }
 
     cstr_t *new_cstr = (cstr_t *)malloc(sizeof(cstr_t));
     if(new_cstr == NULL) { return NULL; }

@@ -1,6 +1,8 @@
-#include "data_structure/type_ops.h"
-#include "data_structure/ast.h"
+#include "type_ops.h"
+#include "core/ast.h"
+#include "core/redir.h"
 #include "data_structure/cstr.h"
+
 
 static void command_init(command_t *self) {
     if (self == NULL) {
@@ -9,9 +11,10 @@ static void command_init(command_t *self) {
     vec_init(&self->args, sizeof(cstr_t), &cstr_ops);
 }
 
-void ast_node_init(ast_node_t *self, ast_node_type_t type) {
+ast_node_t *ast_node_create(ast_node_type_t type) {
+    ast_node_t *self = (ast_node_t *)malloc(sizeof(ast_node_t));
     if (self == NULL) {
-        return;
+        return NULL;
     }
 
     memset(self, 0, sizeof(ast_node_t));
@@ -19,9 +22,10 @@ void ast_node_init(ast_node_t *self, ast_node_type_t type) {
     if(type == NODE_TYPE_COMMAND) {
         command_init(&self->single_command);
     }
+    return self;
 }
 
-void ast_node_deinit(ast_node_t *self) {
+void ast_node_destroy(ast_node_t *self) {
     if (self == NULL) {
         return;
     }
@@ -30,11 +34,12 @@ void ast_node_deinit(ast_node_t *self) {
         vec_deinit(&self->single_command.args);
         vec_deinit(&self->single_command.redirs);
     } else if (self->type == NODE_TYPE_CONNECTION) {
-        ast_node_deinit(self->connection.left);
-        ast_node_deinit(self->connection.right);
+        ast_node_destroy(self->connection.left);
+        ast_node_destroy(self->connection.right);
     }
 
     self->type = NODE_TYPE_UNKNOWN;
+    free(self);
 }
 
 void print_ast(const ast_node_t *node, int depth) {
@@ -55,6 +60,14 @@ void print_ast(const ast_node_t *node, int depth) {
                     printf("  ");
                 }
                 printf("Arg %zu: %s\n", i, arg->data);
+            }
+
+            for (size_t i = 0; i < node->single_command.redirs.size; ++i) {
+                redirection_t *redir = (redirection_t *)vec_at(&node->single_command.redirs, i);
+                for (int j = 0; j < depth + 1; ++j) {
+                    printf("  ");
+                }
+                printf("Redirection %zu: fd=%d, type=%d, file=%s\n", i, redir->fd, redir->type, redir->file.data);
             }
             break;
         case NODE_TYPE_CONNECTION:

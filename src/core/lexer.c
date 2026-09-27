@@ -25,9 +25,11 @@ typedef struct lex_ctx {
 typedef void (*lex_state_func_t)(lex_ctx_t *ctx);
 
 static void lex_state_normal(lex_ctx_t *ctx);
+static void lex_state_digit(lex_ctx_t *ctx);
 
 static const lex_state_func_t state_tbl[LEX_STATE_COUNT] = {
     [LEX_STATE_NORMAL] = lex_state_normal,
+    [LEX_STATE_DIGIT] = lex_state_digit,
 };
 
 static inline b8 lex_end(lex_ctx_t *ctx){
@@ -78,13 +80,26 @@ static void lex_make_token(lex_ctx_t *ctx, tok_type_t type) {
         return;
     }
 
+    ctx->tok.type = type;
     if(type == TOK_REDIR_OUT || type == TOK_REDIR_OUT_APPEND 
         || type == TOK_REDIR_FD || type == TOK_PIPE || type == TOK_AMPERSAND
         || ctx->tok.val.len > 0) 
     {
         vec_push(ctx->tok_list, &ctx->tok);
-        token_clear(&ctx->tok);
+        token_deinit(&ctx->tok);
     }
+}
+
+static void lex_state_digit(lex_ctx_t *ctx) {
+    char c = lex_next(ctx);
+    while(is_digit(c)){
+        cstr_appendn(&ctx->tok.val, &c, 1);
+        c = lex_next(ctx);
+    }
+
+    lex_make_token(ctx, TOK_DIGIT);
+    lex_back(ctx);
+    lex_state_transition(ctx, LEX_STATE_NORMAL);
 }
 
 static void lex_state_normal(lex_ctx_t *ctx) {
@@ -96,9 +111,27 @@ static void lex_state_normal(lex_ctx_t *ctx) {
         case '\0':
             lex_make_token(ctx, TOK_STR);
             break;
-        default:
-            cstr_appendn(&ctx->tok.val, &c, 1);
+        case '>':
+            lex_make_token(ctx, TOK_STR);
+            if(lex_peek(ctx) == '>') {
+                lex_next(ctx);
+                lex_make_token(ctx, TOK_REDIR_OUT_APPEND);
+            } else {
+                lex_make_token(ctx, TOK_REDIR_OUT);
+            }
             break;
+        default:
+            if(ctx->tok.val.len == 0 && is_digit(c)) {
+                lex_state_transition(ctx, LEX_STATE_DIGIT);
+                lex_back(ctx);
+            } else {
+                cstr_appendn(&ctx->tok.val, &c, 1);
+            }
+            break;
+    }
+
+    if(lex_end(ctx)) {
+        lex_make_token(ctx, TOK_STR);
     }
 }
 

@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "helper/string_helper.h"
 
 size_t find_first_non_whitespace(const char *str, size_t len) {
@@ -12,4 +13,8 @@ size_t find_first_non_whitespace(const char *str, size_t len) {
     }
 
     return len;
+}
+
+bool is_digit(char c) {
+    return c >= '0' && c <= '9';
 }
