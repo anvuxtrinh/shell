@@ -9,6 +9,7 @@ static void command_init(command_t *self) {
         return;
     }
     vec_init(&self->args, sizeof(cstr_t), &cstr_ops);
+    vec_init(&self->redirs, sizeof(redirection_t), &redir_ops);
 }
 
 ast_node_t *ast_node_create(ast_node_type_t type) {
