@@ -107,6 +107,14 @@ static void shell_state_parsing(struct shell_ctx *ctx) {
 
 static void shell_state_executing(struct shell_ctx *ctx) {
     if(ctx == NULL) { return; }
+
+    i32 exec_result = executor_exec(ctx->ast);
+    if(exec_result != 0) {
+        printf("Execution failed with error code: %d\n", exec_result);
+        shell_state_transition(ctx, SHELL_STATE_ERROR);
+        return;
+    }
+
     shell_state_transition(ctx, SHELL_STATE_CLEANUP);
 }
 

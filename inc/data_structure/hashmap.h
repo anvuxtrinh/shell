@@ -4,12 +4,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-typedef void *any_t;
-
 struct hashmap_node {
-    any_t key;
+    void *key;
     size_t ksize;
-    any_t value;
+    void *value;
     struct hashmap_node *next;
 };
 
@@ -20,9 +18,8 @@ typedef struct hashmap {
 } hashmap_t;
 
 int hashmap_init(hashmap_t *self);
-int hashmap_put(hashmap_t *self, any_t key, size_t ksize, any_t value);
-any_t hashmap_get(hashmap_t *self, any_t key, size_t ksize);
-void hashmap_free(hashmap_t *self);
+int hashmap_put(hashmap_t *self, const void *key, size_t ksize, void *value);
+void *hashmap_get(hashmap_t *self, const void *key, size_t ksize);
+int hashmap_remove(hashmap_t *self, const void *key, size_t ksize);
+bool hashmap_contains(hashmap_t *self, const void *key, size_t ksize);
 int hashmap_rehash(hashmap_t *self);
-int hashmap_remove(hashmap_t *self, any_t key, size_t ksize);
-bool hashmap_contains(hashmap_t *self, any_t key, size_t ksize);

@@ -20,7 +20,7 @@ STATIC_INLINE bool should_rehash(hashmap_t *self) {
     return self->size * MAX_LOAD_FACTOR_DEN >= self->cap * MAX_LOAD_FACTOR_NUM;
 }
 
-STATIC_INLINE struct hashmap_node *find_node(struct hashmap_node *head, any_t key, size_t ksize) {
+STATIC_INLINE struct hashmap_node *find_node(struct hashmap_node *head, const void *key, size_t ksize) {
     while (head) {
         if (head->ksize == ksize && memcmp(head->key, key, ksize) == 0) {
             return head;
@@ -36,7 +36,7 @@ STATIC_INLINE void free_node(struct hashmap_node *node) {
     }
 }
 
-STATIC_INLINE unsigned int hashmap_hash(any_t key, size_t ksize) {
+STATIC_INLINE unsigned int hashmap_hash(const void *key, size_t ksize) {
     unsigned long hash = 5381;
 
     unsigned char *str = (unsigned char *)key;
@@ -46,13 +46,18 @@ STATIC_INLINE unsigned int hashmap_hash(any_t key, size_t ksize) {
     return (unsigned int)hash;
 }
 
-STATIC struct hashmap_node *create_node(any_t key, size_t ksize, any_t value) {
+STATIC struct hashmap_node *create_node(const void *key, size_t ksize, void *value) {
     if (key == NULL || ksize == 0) { return NULL; }
     struct hashmap_node *node = malloc(sizeof(struct hashmap_node));
     if (node == NULL) {
         return NULL;
     }
-    node->key = key;
+    node->key = malloc(ksize);
+    if (node->key == NULL) {
+        free(node);
+        return NULL;
+    }
+    memcpy(node->key, key, ksize);
     node->ksize = ksize;
     node->value = value;
     node->next = NULL;
@@ -68,7 +73,7 @@ int hashmap_init(hashmap_t *self) {
     return 0;
 }
 
-int hashmap_put(hashmap_t *self, any_t key, size_t ksize, any_t value) {
+int hashmap_put(hashmap_t *self, const void *key, size_t ksize, void *value) {
     if(self == NULL || key == NULL || ksize == 0) {
         return -EINVAL;
     }
@@ -106,7 +111,7 @@ int hashmap_put(hashmap_t *self, any_t key, size_t ksize, any_t value) {
     return 0;
 }
 
-any_t hashmap_get(hashmap_t *self, any_t key, size_t ksize) {
+void *hashmap_get(hashmap_t *self, const void *key, size_t ksize) {
     if(self == NULL || key == NULL || ksize == 0) {
         return NULL;
     }
@@ -175,7 +180,7 @@ int hashmap_rehash(hashmap_t *self) {
     return 0;
 }
 
-int hashmap_remove(hashmap_t *self, any_t key, size_t ksize) {
+int hashmap_remove(hashmap_t *self, const void *key, size_t ksize) {
     if(self == NULL || key == NULL || ksize == 0) {
         return -EINVAL;
     }
@@ -205,7 +210,7 @@ int hashmap_remove(hashmap_t *self, any_t key, size_t ksize) {
     return -ENOENT;
 }
 
-bool hashmap_contains(hashmap_t *self, any_t key, size_t ksize) {
+bool hashmap_contains(hashmap_t *self, const void *key, size_t ksize) {
     if (self == NULL || key == NULL || ksize == 0) {
         return false;
     }
